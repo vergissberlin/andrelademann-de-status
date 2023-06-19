@@ -5,14 +5,18 @@ import (
 
 	"encore.app/site"
 	"encore.dev/cron"
+	"encore.dev/metrics"
 	"encore.dev/storage/sqldb"
 	"golang.org/x/sync/errgroup"
 )
+
+var OrdersProcessed = metrics.NewCounter[uint64]("check", metrics.CounterConfig{})
 
 // Check checks a single site.
 //
 //encore:api public method=POST path=/check/:siteID
 func Check(ctx context.Context, siteID int) error {
+	OrdersProcessed.Increment()
 	site, err := site.Get(ctx, siteID)
 	if err != nil {
 		return err
