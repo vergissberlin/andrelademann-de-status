@@ -6,6 +6,7 @@ import (
 	"encore.app/site"
 	"encore.dev/cron"
 	"encore.dev/metrics"
+	"encore.dev/pubsub"
 	"encore.dev/storage/sqldb"
 	"golang.org/x/sync/errgroup"
 )
@@ -14,14 +15,19 @@ type Labels struct {
 	Success bool
 }
 
+// Subscriptions
+var _ = pubsub.NewSubscription(site.TopicSiteAdd, "site-add", pubsub.SubscriptionConfig[*site.Site]{
+	Handler: check,
+})
+
 var Checked = metrics.NewCounterGroup[Labels, uint64]("check", metrics.CounterConfig{})
 
 // Check checks a single site.
 //
-//encore:api public method=POST path=/check/:siteID
+// encore:api public method=POST path=/check/:siteID
 func Check(ctx context.Context, siteID int) error {
 	var success bool
-    Checked.With(Labels{Success: success}).Increment()
+	Checked.With(Labels{Success: success}).Increment()
 	site, err := site.Get(ctx, siteID)
 	if err != nil {
 		return err
@@ -39,7 +45,7 @@ func Check(ctx context.Context, siteID int) error {
 
 // CheckAll checks all sites.
 //
-//encore:api public method=POST path=/checkall
+// encore:api public method=POST path=/checkall
 func CheckAll(ctx context.Context) error {
 	// Get all the tracked sites.
 	resp, err := site.List(ctx)
