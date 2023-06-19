@@ -10,13 +10,18 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var OrdersProcessed = metrics.NewCounter[uint64]("check", metrics.CounterConfig{})
+type Labels struct {
+	Success bool
+}
+
+var Checked = metrics.NewCounterGroup[Labels, uint64]("check", metrics.CounterConfig{})
 
 // Check checks a single site.
 //
 //encore:api public method=POST path=/check/:siteID
 func Check(ctx context.Context, siteID int) error {
-	OrdersProcessed.Increment()
+	var success bool
+    Checked.With(Labels{Success: success}).Increment()
 	site, err := site.Get(ctx, siteID)
 	if err != nil {
 		return err
@@ -51,6 +56,7 @@ func CheckAll(ctx context.Context) error {
 			return Check(ctx, site.ID)
 		})
 	}
+
 	return g.Wait()
 }
 
