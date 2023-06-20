@@ -20,11 +20,14 @@ func Ping(ctx context.Context, url string) (*PingResponse, error) {
 		url = "https://" + url
 	}
 
-	// Make an HTTP request to check if it's up.
+	// Make an HTTP request to check if it's up or down.
+	// If the request fails, consider the site down.
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
+
+	// If the request fails, consider the site down.
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return &PingResponse{Up: false}, nil

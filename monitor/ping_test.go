@@ -11,8 +11,8 @@ func TestPing(t *testing.T) {
 		URL string
 		Up  bool
 	}{
-		{"encore.dev", true},
-		{"google.com", true},
+		{"blog.andrelademann.de", true},
+		{"andreladeann.de", true},
 		// Test both with and without "https://"
 		{"httpbin.org/status/200", true},
 		{"https://httpbin.org/status/200", true},
